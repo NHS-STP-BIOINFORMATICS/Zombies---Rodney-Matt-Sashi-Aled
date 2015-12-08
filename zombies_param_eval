@@ -1,0 +1,141 @@
+# -*- coding: utf-8 -*-
+# <nbformat>3.0</nbformat>
+
+# <codecell>
+
+
+import scipy.integrate as spi
+import numpy as np
+import pylab as pl
+
+# <markdowncell>
+
+# Constants:
+# Civilian bite rate = 0.5
+# Army bite rate = 
+# Natural death rate = 
+# Civilian zombie kill rate = 
+# Army zombie kill rate = 
+
+# <codecell>
+
+# carrier_bite,army_bite,death,carrier_kill,army_kill,training
+#global params
+#params=(0.2,0.05,0.0001,0.05,0.8,0.001)
+#carrier_bite= params[0]
+#army_bite= params[1]
+#death= params[2]
+#carrier_kill= params[3]
+#army_kill= params[4]
+#training = params[5]
+
+start_values=(0.01,0.98,0.01,0.0)
+#a_start = start_values[0]
+#c_start = start_values[1]
+#z_start = start_values[2]
+#d_start = start_values[3]
+
+
+# <markdowncell>
+
+# Equations:
+# dA/dt = 
+# dC/dt = 
+# dZ/dt = 
+# dD/dt = 
+
+# <codecell>
+
+def diff_eqs(start_values, time):
+    #define the rates
+    carrier_bite= params[0]
+    army_bite= params[1]
+    death= params[2]
+    carrier_kill= params[3]
+    army_kill= params[4]
+    training = params[5]
+    
+    #define the start values
+    a_start = start_values[0]
+    c_start = start_values[1]
+    z_start = start_values[2]
+    d_start = start_values[3]
+    
+    
+    output = [0,0,0,0]
+    
+    output[0] = -(army_bite * a_start * z_start) - (death*a_start) + (training * c_start) # Army
+    output[1] = -(carrier_bite * c_start * z_start) - (death*c_start) - (training * c_start)#Carrier
+    output[2] = (army_bite * a_start * z_start) + (carrier_bite * c_start * z_start) + (death*a_start) + (death*c_start)\
+                - (carrier_kill * c_start * z_start) - (army_kill * a_start * z_start) #Zombie
+    output[3] = (carrier_kill * c_start * z_start) + (army_kill * a_start * z_start) #Dead
+    return output
+    assert sum(output) != 0, "Error"
+    
+
+# <codecell>
+
+t_start = 0.0
+t_end = 500
+t_increment = 25
+t_range = np.arange(t_start, t_end+t_increment, t_increment)
+
+# <codecell>
+
+#result =  spi.odeint(diff_eqs, start_values, t_range)
+#print result
+
+
+# <codecell>
+
+#print "test"
+#print "data:", result[:,0]
+#pl.plot(result[:,0], '-bs', label = 'Army')
+#l.plot(result[:,1], '-ro', label = 'Carrier')
+#l.plot(result[:,2], '-go', label = 'Zombie')
+#l.plot(result[:,3], '-yo', label = 'Dead')
+
+#pl.legend(loc=0)
+#pl.title("Title")
+#pl.xlabel("X")
+#pl.ylabel("Y")
+#pl.savefig("filename.png",  dpi = 900)
+#pl.show()
+
+# <markdowncell>
+
+
+# <codecell>
+
+params=[0.2,0.05,0.0001,0.05,0.8,0.001]
+obsv = spi.odeint(diff_eqs, start_values, t_range)
+list_of_sum_sqs=[]
+
+def sum_of_sq(obsv, model):
+    sos = sum([(o-m)**2 for o, m in zip(obsv, model)])
+    ##print "SOS:", sos
+    return sos
+
+for m in [1.05, 0.95]:
+    for i in range(6):
+        #print params[i]
+        original=params[i]
+        params[i]=params[i]*m
+        test = spi.odeint(diff_eqs, start_values, t_range)
+        list_of_sum_sqs.append(float(sum_of_sq(obsv[2],test[2])))
+        params[i]=original
+#print list_of_sum_sqs[0:6]
+#print list_of_sum_sqs[6:]
+
+pairs = zip(list_of_sum_sqs[0:6], list_of_sum_sqs[6:])
+
+for i in pairs:
+    print str(i)+"\n"
+
+
+
+    
+
+# <codecell>
+
+
